@@ -4,8 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#070b16" />
-  <meta name="description" content="Astrometric — observing conditions planner. Score the night sky at your site." />
+  <meta name="description" content="Astrometric — dark-sky observing planner. Score the night, map light pollution, plan Messier targets." />
   <title>Astrometric</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%23070b16' width='32' height='32'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%239fb6ff'/%3E%3C/svg%3E" />
 </head>
@@ -17,114 +20,125 @@
         <span class="site-meta" id="site-meta">Tap to search</span>
       </button>
       <div class="top-actions">
-        <button type="button" id="red-btn" class="icon-btn" title="Night vision (red mode)" aria-pressed="false">Red</button>
-        <button type="button" id="refresh-btn" class="icon-btn" title="Refresh forecast">↻</button>
+        <button type="button" id="red-btn" class="pill" title="Night vision" aria-pressed="false">Red light</button>
+        <button type="button" id="refresh-btn" class="pill" title="Refresh">↻</button>
       </div>
     </header>
 
     <div id="banner" class="banner hidden" role="status"></div>
 
-    <main id="main">
-      <section class="hero card" id="hero">
-        <p class="eyebrow" id="night-label">Tonight</p>
-        <div class="score-row">
-          <div class="score-big">
-            <span id="score-num">—</span><span class="score-den">/100</span>
+    <div class="dashboard">
+      <div class="dash-left">
+        <section class="card" id="hero">
+          <p class="eyebrow" id="night-label">Tonight</p>
+          <div class="score-row">
+            <div class="score-big">
+              <span id="score-num">—</span><span class="score-den">/100</span>
+            </div>
+            <div>
+              <p class="verdict" id="verdict">Pick a site</p>
+              <p class="muted small" id="best-window"></p>
+            </div>
           </div>
-          <div class="score-side">
-            <p class="verdict" id="verdict">Loading…</p>
-            <p class="muted" id="best-window"></p>
+          <div class="strip" id="score-strip" aria-hidden="true"></div>
+        </section>
+
+        <section class="card">
+          <h2>Next nights</h2>
+          <div class="nights-list" id="nights-list"></div>
+        </section>
+
+        <section class="card">
+          <h2>Light pollution</h2>
+          <p class="muted small" id="lp-caption">From NASA VIIRS night lights around the site</p>
+          <div class="lp-stats">
+            <div class="lp-stat"><b id="lp-bortle">—</b><span>Bortle</span></div>
+            <div class="lp-stat"><b id="lp-sqm">—</b><span>SQM</span></div>
+            <div class="lp-stat"><b id="lp-zenith">—</b><span>Zenith glow</span></div>
           </div>
-        </div>
-        <div class="strip" id="score-strip" aria-hidden="true"></div>
-        <div class="nights-tabs" id="nights-tabs"></div>
-      </section>
+        </section>
+      </div>
 
-      <section class="card">
-        <h2>Hour by hour</h2>
-        <div class="hour-table-wrap">
-          <table class="hour-table" id="hour-table">
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>Score</th>
-                <th>Cloud</th>
-                <th>RH</th>
-                <th>Gust</th>
-                <th>Sun</th>
-                <th>Moon</th>
-              </tr>
-            </thead>
-            <tbody id="hour-body"></tbody>
-          </table>
-        </div>
-      </section>
+      <div class="dash-right">
+        <section class="card">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap">
+            <h2 style="margin:0">Hour by hour</h2>
+            <span class="muted small">tap any hour</span>
+          </div>
+          <div class="grid-wrap" id="heat-wrap"></div>
+          <div class="legend-bar">
+            <span>Best</span>
+            <div class="swatches" id="legend-swatches"></div>
+            <span>Worst</span>
+          </div>
+          <div class="readout" id="hour-readout">Select an hour for details.</div>
+        </section>
 
-      <section class="card skymap-card">
-        <h2>Sky map</h2>
-        <p class="muted small" id="skymap-caption">Zenith centre · N up · mid-dark of selected night</p>
-        <div class="skymap-wrap">
-          <canvas id="skymap" width="640" height="640" aria-label="All-sky map"></canvas>
-        </div>
-        <p class="muted small skymap-legend">
-          <span class="leg moon">Moon</span>
-          <span class="leg messier">Messier</span>
-          <span class="leg horizon">Horizon</span>
-        </p>
-      </section>
+        <section class="card skymap-card">
+          <h2>Sky map</h2>
+          <p class="muted small" id="skymap-caption">Zenith centre · N up · light pollution + Messier</p>
+          <div class="skymap-wrap">
+            <canvas id="skymap" width="640" height="640" aria-label="All-sky map with light pollution"></canvas>
+          </div>
+          <p class="skymap-legend">
+            <span class="leg moon">Moon</span>
+            <span class="leg messier">Messier</span>
+            <span class="leg lp">Light pollution</span>
+          </p>
+        </section>
 
-      <section class="card">
-        <h2>Messier objects</h2>
-        <p class="muted small" id="messier-meta">Above the horizon during the selected night</p>
-        <div class="messier-filters">
-          <button type="button" class="chip active" data-filter="up">Up tonight</button>
-          <button type="button" class="chip" data-filter="all">All 110</button>
-        </div>
-        <div class="messier-list" id="messier-list"></div>
-      </section>
+        <section class="card">
+          <h2>Messier objects</h2>
+          <p class="muted small" id="messier-meta">Above the horizon during the selected night</p>
+          <div class="messier-filters">
+            <button type="button" class="chip active" data-filter="up">Up tonight</button>
+            <button type="button" class="chip" data-filter="all">All 110</button>
+          </div>
+          <div class="messier-list" id="messier-list"></div>
+        </section>
 
-      <section class="card factors-card">
-        <h2>What drives the score</h2>
-        <div class="factors" id="factors">
-          <div class="factor"><span class="f-label">Clouds</span><div class="f-bar"><i id="f-clouds"></i></div></div>
-          <div class="factor"><span class="f-label">Transparency</span><div class="f-bar"><i id="f-transp"></i></div></div>
-          <div class="factor"><span class="f-label">Seeing</span><div class="f-bar"><i id="f-seeing"></i></div></div>
-          <div class="factor"><span class="f-label">Wind</span><div class="f-bar"><i id="f-wind"></i></div></div>
-          <div class="factor"><span class="f-label">Darkness</span><div class="f-bar"><i id="f-dark"></i></div></div>
-        </div>
-        <p class="sources muted">
-          Clouds matter most; transparency from humidity; seeing from the 250&nbsp;hPa jet stream when available;
-          wind from ground gusts; darkness from twilight and the moon. Forecast from
-          <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>;
-          Kp from <a href="https://www.swpc.noaa.gov/" target="_blank" rel="noopener">NOAA SWPC</a>.
-          Sun and moon positions calculated in the browser.
-        </p>
-      </section>
+        <section class="card factors-card">
+          <h2>How nights are scored</h2>
+          <div class="factors" id="factors">
+            <div class="factor"><span class="f-label">Clouds</span><div class="f-bar"><i id="f-clouds"></i></div></div>
+            <div class="factor"><span class="f-label">Transparency</span><div class="f-bar"><i id="f-transp"></i></div></div>
+            <div class="factor"><span class="f-label">Seeing</span><div class="f-bar"><i id="f-seeing"></i></div></div>
+            <div class="factor"><span class="f-label">Wind</span><div class="f-bar"><i id="f-wind"></i></div></div>
+            <div class="factor"><span class="f-label">Darkness</span><div class="f-bar"><i id="f-dark"></i></div></div>
+          </div>
+          <p class="sources">
+            Clouds matter most; transparency from humidity; seeing from the 250&nbsp;hPa jet stream;
+            wind from ground gusts; darkness from twilight and the moon. Forecast from
+            <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>;
+            Kp from <a href="https://www.swpc.noaa.gov/" target="_blank" rel="noopener">NOAA SWPC</a>;
+            night lights from <a href="https://earthdata.nasa.gov/gibs" target="_blank" rel="noopener">NASA GIBS VIIRS</a>.
+          </p>
+        </section>
 
-      <section class="card" id="space-weather">
-        <h2>Space weather</h2>
-        <p id="kp-text" class="muted">Loading Kp…</p>
-      </section>
-    </main>
+        <section class="card" id="space-weather">
+          <h2>Space weather</h2>
+          <p id="kp-text" class="muted">Loading Kp…</p>
+        </section>
+      </div>
+    </div>
 
     <footer class="footer muted">
-      <span>Astrometric web · same scoring as the iOS app</span>
+      <span>Astrometric web · scoring aligned with the iOS app &amp; SkyQuality</span>
     </footer>
   </div>
 
-  <!-- Site picker sheet -->
   <div id="sheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
     <div class="sheet-backdrop" id="sheet-backdrop"></div>
     <div class="sheet-panel">
       <div class="sheet-head">
         <h2 id="sheet-title">Observing site</h2>
-        <button type="button" id="sheet-close" class="icon-btn">✕</button>
+        <button type="button" id="sheet-close" class="pill">✕</button>
       </div>
-      <input type="search" id="site-search" class="search" placeholder="Town, park, observatory…" autocomplete="off" />
+      <input type="search" id="site-search" class="search" placeholder="Town, park or observatory" autocomplete="off" />
       <button type="button" id="geo-btn" class="geo-btn">Use my location</button>
       <ul id="search-results" class="results"></ul>
       <div class="presets">
-        <p class="muted small">Examples</p>
+        <span class="muted small">Examples</span>
         <button type="button" class="preset" data-name="Cherry Springs, PA" data-lat="41.663" data-lon="-77.823">Cherry Springs</button>
         <button type="button" class="preset" data-name="Mauna Kea, HI" data-lat="19.8207" data-lon="-155.4681">Mauna Kea</button>
         <button type="button" class="preset" data-name="Atacama, Chile" data-lat="-24.627" data-lon="-70.404">Atacama</button>
@@ -135,6 +149,7 @@
 
   <script src="js/astro.js"></script>
   <script src="js/scoring.js"></script>
+  <script src="js/lightpollution.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
